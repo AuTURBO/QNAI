@@ -1,9 +1,9 @@
 name: Pylint
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
+  analyze:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,4 +21,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         # TODO: uncomment the following line when we have some code to analyse.
-        # pylint --rcfile=.pylintrc $(git ls-files '*.py')
+        pylint --rcfile=.pylintrc $(git ls-files '*.py')
