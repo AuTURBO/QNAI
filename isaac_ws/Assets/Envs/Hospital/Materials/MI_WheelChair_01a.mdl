@@ -1,0 +1,79 @@
+﻿mdl 1.3;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material MI_WheelChair_01a(
+	float TextureCoord = 1.0,
+	uniform texture_2d Normal = texture_2d("./Textures/TX_Fill_01_NRM.png",::tex::gamma_linear)
+	[[sampler_normal()]],
+	float4 NormalMulti = float4(1.0,1.0,1.0,1.0),
+	uniform texture_2d Albedo = texture_2d("./Textures/TX_Fill_01_ALB.png",::tex::gamma_srgb)
+	[[sampler_color()]],
+	float4 AlbedoColorTint = float4(1.0,1.0,1.0,1.0),
+	float ClothPower = 6.0,
+	float ClothEdgeBrightness = 0.8,
+	float ClothCoreDarkness = 0.8,
+	uniform texture_2d RMA = texture_2d("./Textures/TX_Fill_01_RMA.png",::tex::gamma_linear)
+	[[sampler_masks()]])
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+	float2 CustomizedUV0_mdl = float2(state::texture_coordinate(0).x,1.0-state::texture_coordinate(0).y);
+
+	float2 Local0 = (CustomizedUV0_mdl * TextureCoord);
+	float4 Local1 = ::unpack_normal_map(tex::lookup_float4(Normal,float2(Local0.x,1.0-Local0.y),tex::wrap_repeat,tex::wrap_repeat));
+	float3 Local2 = (float3(Local1.x,Local1.y,Local1.z) * float3(NormalMulti.x,NormalMulti.y,NormalMulti.z));
+
+	float3 Normal_mdl = Local2;
+
+	float4 Local3 = tex::lookup_float4(Albedo,float2(Local0.x,1.0-Local0.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local4 = (float3(Local3.x,Local3.y,Local3.z) * float3(AlbedoColorTint.x,AlbedoColorTint.y,AlbedoColorTint.z));
+	float3 Local5 = (Local2 * float3(float2(1.0,1.0).x,float2(1.0,1.0).y,1.0));
+	float3 Local6 = ::transform_vector_from_tangent_to_world(float3(Local5.x,Local5.y,Local5.z));
+	float Local7 = math::dot(::camera_vector(), Local6);
+	float Local8 = math::min(math::max(Local7,0.0),1.0);
+	float Local9 = (1.0 - Local8);
+	float Local10 = math::pow(Local9,ClothPower);
+	float Local11 = (Local10 * ClothEdgeBrightness);
+	float Local12 = (Local8 * ClothCoreDarkness);
+	float Local13 = (1.0 - Local12);
+	float Local14 = (Local13 + 0.0);
+	float Local15 = (Local11 + Local14);
+	float3 Local16 = (Local15 * Local4);
+	float4 Local17 = tex::lookup_float4(RMA,float2(Local0.x,1.0-Local0.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local18 = math::lerp(Local4,Local16,Local17.w);
+	float Local19 = (Local17.z * 0.5);
+	float Local20 = math::min(math::max(Local17.x,0.0),1.0);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float OpacityMask_mdl = 1.0;
+	float3 BaseColor_mdl = Local18;
+	float Metallic_mdl = Local17.y;
+	float Specular_mdl = Local19;
+	float Roughness_mdl = Local20;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: false);
