@@ -46,12 +46,14 @@ print("asset_path: ", assets_root_path)
 
 simulation_app.update()
 # Loading the hospital environment
+# FIXME: Error occur when loading the hospital environment
 stage.add_reference_to_stage(
     assets_root_path + "/Envs/Hospital/hospital.usd", "/World/hospital"
 )
 simulation_app.update()
 
 
+# FIXME: Error occur when loading the robot
 asset_path = assets_root_path + "/Robots/Unitree/go1.usd"
 stage.add_reference_to_stage(usd_path=asset_path, prim_path="/World/go1")
 go1_robot = world.scene.add(Robot(prim_path="/World/go1", name="go1"))
