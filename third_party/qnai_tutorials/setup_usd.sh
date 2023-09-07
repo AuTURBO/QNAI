@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Download assets from google drive
 tutorial_asset=https://www.dropbox.com/scl/fi/5k9ik29pdgnevhvpf17f5/tutorial_asset.zip?rlkey=ysip5tuzrml2ys7dlqqqr6c4l

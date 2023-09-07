@@ -21,12 +21,23 @@ you can download envs and robot files in this [link](https://www.dropbox.com/hom
 
 you can download only one command.
 
-```bash
-bash setup_usd.bash
+```sh
+sh setup_usd.sh
 ```
 
 ## How to start isaac sim python file?
 
-```bash
-~/.local/share/ov/pkg/isaac_sim-2022.2.1/python.sh [python file]
+```sh
+./run.sh
 ```
+
+# todo list
+
+-   [x] Add isaac sim python file
+-   [x] Spawn envs and robots
+-   [ ] Make omnigraph for quadruped robot(Jinwon)
+    -   [ ] Controller
+    -   [ ] IMU, Lidar, Joint state to ros topic
+-   [ ] Make omnigraph for Mobile robot (Minwoo)
+    -   [ ] Controller
+    -   [ ] IMU, Lidar, encoder to ros topic

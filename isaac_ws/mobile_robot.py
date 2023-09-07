@@ -1,5 +1,5 @@
 """
-This script loads the hospital environment and the quadruped robot.
+This script loads the hospital environment and the mobile robot.
 Author: Jinwon Kim
 Date: 2023-09-07
 """
@@ -60,9 +60,9 @@ stage.add_reference_to_stage(env_usd_path, "/World/hospital")
 simulation_app.update()
 
 # Loading the robot
-robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/Unitree/go1.usd")
-stage.add_reference_to_stage(usd_path=robot_usd_path, prim_path="/World/go1")
-go1_robot = world.scene.add(Robot(prim_path="/World/go1", name="go1"))
+robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/Carter/carter_v2.usd")
+stage.add_reference_to_stage(usd_path=robot_usd_path, prim_path="/World/carter")
+carter_robot = world.scene.add(Robot(prim_path="/World/carter", name="carter"))
 
 simulation_app.update()
 simulation_app.update()

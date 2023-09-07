@@ -22,8 +22,8 @@ There is [manual](https://docs.omniverse.nvidia.com/isaacsim/2022.2.1/install_ro
 
 you need to download "isaac_ws" which is asset folder for tutorial.
 
-```bash
-bash setup_usd.bash
+```sh
+sh setup_usd.sh
 ```
 
 This repository is tested on the **Isaac sim 2022.2.1** and **ROS 2 foxy**.

@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # mkdir Assets/Envs & mkdir Assets/Robots
 mkdir -p Assets/Envs && mkdir -p Assets/Robots
