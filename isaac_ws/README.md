@@ -8,7 +8,7 @@ Isaac_sim_2022.2.1
 
 ## Download files
 
-you can download envs and robot files in this [link](https://drive.google.com/drive/u/1/folders/1Yxivv1F7GC0nwLJlQh1xYkyHt_tSz_pp).
+you can download envs and robot files in this [link](https://www.dropbox.com/home/Auturbo/QNAI).
 
 **Env files**
 
@@ -18,6 +18,12 @@ you can download envs and robot files in this [link](https://drive.google.com/dr
 
 -   Carter
 -   Unitree
+
+you can download only one command.
+
+```bash
+bash setup_usd.bash
+```
 
 ## How to start isaac sim python file?
 
