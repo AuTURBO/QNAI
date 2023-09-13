@@ -7,6 +7,7 @@ Date: 2023-09-07
 import sys
 import os
 import argparse
+import numpy as np
 
 import carb
 import omni
@@ -32,12 +33,13 @@ args, unknown = parser.parse_known_args()
 # enable ROS2 bridge extension
 enable_extension(args.ros2_bridge)
 
-PHYSICS_DOWNTIME = 1 / 400.0
+PHYSICS_DOWNTIME = 1 / 4000.0 #400
 RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
 
 simulation_app.update()
 
 world = World(stage_units_in_meters=1.0, physics_dt=PHYSICS_DOWNTIME, rendering_dt=RENDER_DOWNTIME)
+world.scene.add_default_ground_plane() # for testing
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 
@@ -54,15 +56,20 @@ print("asset_path: ", assets_root_path)
 
 simulation_app.update()
 # Loading the hospital environment
-env_usd_path = os.path.join(assets_root_path, "Assets/Envs/Hospital/hospital.usd")
+env_usd_path = os.path.join(assets_root_path, "/Assets/Envs/hospital.usd")
 stage.add_reference_to_stage(env_usd_path, "/World/hospital")
 
 simulation_app.update()
 
 # Loading the robot
-robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/Unitree/go1.usd")
+robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
 stage.add_reference_to_stage(usd_path=robot_usd_path, prim_path="/World/go1")
 go1_robot = world.scene.add(Robot(prim_path="/World/go1", name="go1"))
+
+go1_position = np.array([0.0, 0.0, 0.5])
+go1_orientation = np.array([0.0, 0.0, 0.0, 1.0])
+
+go1_robot.set_world_pose(position=go1_position, orientation=go1_orientation)
 
 simulation_app.update()
 simulation_app.update()

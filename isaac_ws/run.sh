@@ -2,7 +2,7 @@
 
 # Define default values
 isaac_sim_path="$HOME/.local/share/ov/pkg/isaac_sim-2022.2.1/python.sh"
-python_file="mobile_robot.py"
+python_file="quadruped_robot.py"
 
 # Check if arguments were provided, and if not, use default values
 if [ $# -eq 0 ]; then
