@@ -1,6 +1,3 @@
 .vscode
 
-isaac_ws/Assets/Envs/*
-isaac_ws/Assets/Robots/*
-
 third_party/qnai_tutorials/isaac_ws
