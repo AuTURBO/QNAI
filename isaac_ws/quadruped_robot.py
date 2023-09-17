@@ -4,13 +4,6 @@ Author: Jinwon Kim
 Date: 2023-09-07
 """
 
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils import stage
-from omni.isaac.core import World
-from omni.isaac.core.robots import Robot
-from omni.isaac.range_sensor import _range_sensor
-from omni.isaac.core.utils.stage import is_stage_loading
-
 import sys
 import os
 import argparse
@@ -22,6 +15,13 @@ import omni
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils import stage
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.range_sensor import _range_sensor
+from omni.isaac.core.utils.stage import is_stage_loading
 
 parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
 parser.add_argument(
@@ -44,16 +44,16 @@ from sensor_msgs.msg import PointCloud2, PointField
 class PointCloudPublisher(Node):
 
     def __init__(self):
-        super().__init__('point_cloud_publisher')
+        super().__init__("point_cloud_publisher")
         self.publisher = self.create_publisher(PointCloud2,
-                                               'point_cloud_topic', 10)
+                                               "point_cloud_topic", 10)
         timer_period = 1.0  # Publish at 1 Hz
         self.timer = self.create_timer(timer_period, self.publish_point_cloud)
 
     def publish_point_cloud(self, data):
         point_cloud_msg = PointCloud2()
         point_cloud_msg.header.stamp = self.get_clock().now().to_msg()
-        point_cloud_msg.header.frame_id = 'frame'  # Set the frame ID
+        point_cloud_msg.header.frame_id = "frame"  # Set the frame ID
 
         # point cloud data
         point_cloud_data = data.astype(np.float32)
@@ -62,15 +62,15 @@ class PointCloudPublisher(Node):
         # point_cloud_msg.height = 1
         # point_cloud_msg.width = 1
         point_cloud_msg.fields = [
-            PointField(name='x',
+            PointField(name="x",
                        offset=0,
                        datatype=PointField.FLOAT32,
                        count=1),
-            PointField(name='y',
+            PointField(name="y",
                        offset=4,
                        datatype=PointField.FLOAT32,
                        count=1),
-            PointField(name='z',
+            PointField(name="z",
                        offset=8,
                        datatype=PointField.FLOAT32,
                        count=1),
@@ -82,7 +82,7 @@ class PointCloudPublisher(Node):
         point_cloud_msg.data = point_cloud_data.tobytes()
 
         self.publisher.publish(point_cloud_msg)
-        # self.get_logger().info('Published a 3D point cloud.')
+        # self.get_logger().info("Published a 3D point cloud.")
 
 
 PHYSICS_DOWNTIME = 1 / 4000.0  # 400
@@ -110,7 +110,8 @@ print("asset_path: ", assets_root_path)
 simulation_app.update()
 # Loading the hospital environment
 env_usd_path = os.path.join(assets_root_path, "Assets/Envs/hospital2.usd")
-stage.add_reference_to_stage(env_usd_path, "/World/hospital")
+# stage.add_reference_to_stage(env_usd_path, "/World/hospital")
+omni.usd.get_context().open_stage(env_usd_path, None)
 # Wait two frames so that stage starts loading
 simulation_app.update()
 simulation_app.update()
@@ -140,10 +141,10 @@ simulation_app.update()
 
 # ROS2 node
 rclpy.init(args=unknown)
-node = rclpy.create_node('lidar_publisher')
+node = rclpy.create_node("lidar_publisher")
 
 # ROS2 publisher
-publisher = node.create_publisher(PointCloud2, 'lidar', 10)
+publisher = node.create_publisher(PointCloud2, "lidar", 10)
 PointCloud2_msg = PointCloud2()
 
 timeline = omni.timeline.get_timeline_interface()
