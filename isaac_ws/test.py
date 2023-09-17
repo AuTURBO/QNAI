@@ -1,3 +1,9 @@
+"""
+This script is test file 
+Author: Jinwon Kim
+Date: 2023-09-17
+"""
+
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
 import os

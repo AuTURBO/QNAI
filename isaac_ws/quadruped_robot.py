@@ -42,6 +42,9 @@ from sensor_msgs.msg import PointCloud2, PointField
 
 
 class PointCloudPublisher(Node):
+    """
+    PointCloud2 publisher 
+    """
 
     def __init__(self):
         super().__init__("point_cloud_publisher")
