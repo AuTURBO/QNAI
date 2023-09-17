@@ -4,6 +4,13 @@ Author: Jinwon Kim
 Date: 2023-09-07
 """
 
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils import stage
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.range_sensor import _range_sensor
+from omni.isaac.core.utils.stage import is_stage_loading
+
 import sys
 import os
 import argparse
@@ -15,12 +22,6 @@ import omni
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
-
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils import stage
-from omni.isaac.core import World
-from omni.isaac.core.robots import Robot
-from omni.isaac.range_sensor import _range_sensor
 
 parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
 parser.add_argument(
@@ -38,12 +39,14 @@ enable_extension(args.ros2_bridge)
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2, PointField
-import numpy as np
+
 
 class PointCloudPublisher(Node):
+
     def __init__(self):
         super().__init__('point_cloud_publisher')
-        self.publisher = self.create_publisher(PointCloud2, 'point_cloud_topic', 10)
+        self.publisher = self.create_publisher(PointCloud2,
+                                               'point_cloud_topic', 10)
         timer_period = 1.0  # Publish at 1 Hz
         self.timer = self.create_timer(timer_period, self.publish_point_cloud)
 
@@ -59,9 +62,18 @@ class PointCloudPublisher(Node):
         # point_cloud_msg.height = 1
         # point_cloud_msg.width = 1
         point_cloud_msg.fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='x',
+                       offset=0,
+                       datatype=PointField.FLOAT32,
+                       count=1),
+            PointField(name='y',
+                       offset=4,
+                       datatype=PointField.FLOAT32,
+                       count=1),
+            PointField(name='z',
+                       offset=8,
+                       datatype=PointField.FLOAT32,
+                       count=1),
         ]
         point_cloud_msg.is_bigendian = False
         point_cloud_msg.point_step = 12  # 3 * 4 bytes (float32)
@@ -72,12 +84,15 @@ class PointCloudPublisher(Node):
         self.publisher.publish(point_cloud_msg)
         # self.get_logger().info('Published a 3D point cloud.')
 
-PHYSICS_DOWNTIME = 1 / 4000.0 #400
+
+PHYSICS_DOWNTIME = 1 / 4000.0  # 400
 RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
 
 simulation_app.update()
 
-world = World(stage_units_in_meters=1.0, physics_dt=PHYSICS_DOWNTIME, rendering_dt=RENDER_DOWNTIME)
+world = World(stage_units_in_meters=1.0,
+              physics_dt=PHYSICS_DOWNTIME,
+              rendering_dt=RENDER_DOWNTIME)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 
@@ -101,7 +116,6 @@ simulation_app.update()
 simulation_app.update()
 
 print("Loading stage...")
-from omni.isaac.core.utils.stage import is_stage_loading
 
 while is_stage_loading():
     simulation_app.update()
@@ -113,7 +127,8 @@ stage.add_reference_to_stage(usd_path=robot_usd_path, prim_path="/World/go1")
 go1_robot = world.scene.add(Robot(prim_path="/World/go1", name="go1"))
 lidar_path = "trunk/Lidar_shape/Lidar"
 
-lidarInterface = _range_sensor.acquire_lidar_sensor_interface() # Used to interact with the LIDAR
+# Used to interact with the LIDAR
+lidarInterface = _range_sensor.acquire_lidar_sensor_interface()
 
 go1_position = np.array([0.0, 0.0, 0.5])
 go1_orientation = np.array([0.0, 0.0, 0.0, 1.0])
@@ -135,12 +150,12 @@ timeline = omni.timeline.get_timeline_interface()
 
 lidar_pub = PointCloudPublisher()
 
-
 while simulation_app.is_running():
     timeline.play()
     simulation_app.update()
 
-    points_data = lidarInterface.get_point_cloud_data(os.path.join(go1_robot.prim_path, lidar_path))
+    points_data = lidarInterface.get_point_cloud_data(
+        os.path.join(go1_robot.prim_path, lidar_path))
 
     lidar_pub.publish_point_cloud(points_data)
 

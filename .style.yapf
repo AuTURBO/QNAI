@@ -1,2 +1,8 @@
 [style]
 based_on_style = google
+
+# import 순서 무시
+skip = I
+
+# import 순서 변경하지 않음
+no_local_reorder = true

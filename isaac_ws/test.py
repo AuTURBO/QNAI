@@ -8,7 +8,6 @@ import omni
 
 from omni.isaac.kit import SimulationApp
 
-
 simulation_app = SimulationApp({"headless": False})
 
 PHYSICS_DOWNTIME = 1 / 4000.0  # 400
@@ -17,7 +16,8 @@ RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
 test = 1
 
 world = World(stage_units_in_meters=1.0,
-              physics_dt=PHYSICS_DOWNTIME, rendering_dt=RENDER_DOWNTIME)
+              physics_dt=PHYSICS_DOWNTIME,
+              rendering_dt=RENDER_DOWNTIME)
 
 # Get the directory of the currently executing Python script
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -40,7 +40,6 @@ simulation_app.update()
 simulation_app.update()
 
 print("Loading stage...")
-
 
 while is_stage_loading():
     simulation_app.update()

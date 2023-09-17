@@ -37,7 +37,9 @@ RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
 
 simulation_app.update()
 
-world = World(stage_units_in_meters=1.0, physics_dt=PHYSICS_DOWNTIME, rendering_dt=RENDER_DOWNTIME)
+world = World(stage_units_in_meters=1.0,
+              physics_dt=PHYSICS_DOWNTIME,
+              rendering_dt=RENDER_DOWNTIME)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 
@@ -54,14 +56,17 @@ print("asset_path: ", assets_root_path)
 
 simulation_app.update()
 # Loading the hospital environment
-env_usd_path = os.path.join(assets_root_path, "Assets/Envs/Hospital/hospital.usd")
+env_usd_path = os.path.join(assets_root_path,
+                            "Assets/Envs/Hospital/hospital.usd")
 stage.add_reference_to_stage(env_usd_path, "/World/hospital")
 
 simulation_app.update()
 
 # Loading the robot
-robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/Carter/carter_v2.usd")
-stage.add_reference_to_stage(usd_path=robot_usd_path, prim_path="/World/carter")
+robot_usd_path = os.path.join(assets_root_path,
+                              "Assets/Robots/Carter/carter_v2.usd")
+stage.add_reference_to_stage(usd_path=robot_usd_path,
+                             prim_path="/World/carter")
 carter_robot = world.scene.add(Robot(prim_path="/World/carter", name="carter"))
 
 simulation_app.update()
