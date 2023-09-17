@@ -70,7 +70,7 @@ class PointCloudPublisher(Node):
         point_cloud_msg.data = point_cloud_data.tobytes()
 
         self.publisher.publish(point_cloud_msg)
-        self.get_logger().info('Published a 3D point cloud.')
+        # self.get_logger().info('Published a 3D point cloud.')
 
 PHYSICS_DOWNTIME = 1 / 4000.0 #400
 RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
@@ -78,7 +78,6 @@ RENDER_DOWNTIME = PHYSICS_DOWNTIME * 8
 simulation_app.update()
 
 world = World(stage_units_in_meters=1.0, physics_dt=PHYSICS_DOWNTIME, rendering_dt=RENDER_DOWNTIME)
-world.scene.add_default_ground_plane() # for testing
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 
@@ -95,10 +94,18 @@ print("asset_path: ", assets_root_path)
 
 simulation_app.update()
 # Loading the hospital environment
-# env_usd_path = os.path.join(assets_root_path, "/Assets/Envs/hospital.usd")
-# stage.add_reference_to_stage(env_usd_path, "/World/hospital")
-
+env_usd_path = os.path.join(assets_root_path, "Assets/Envs/hospital2.usd")
+stage.add_reference_to_stage(env_usd_path, "/World/hospital")
+# Wait two frames so that stage starts loading
 simulation_app.update()
+simulation_app.update()
+
+print("Loading stage...")
+from omni.isaac.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
+    simulation_app.update()
+print("Loading Complete")
 
 # Loading the robot
 robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
