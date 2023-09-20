@@ -17,7 +17,7 @@ from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
 from omni.isaac.quadruped.controllers import A1QPController
-from omni.isaac.sensor import ContactSensor, IMUSensor
+from omni.isaac.sensor import ContactSensor, IMUSensor, LidarRtx
 from omni.isaac.range_sensor import _range_sensor
 from typing import Optional, List
 from collections import deque
@@ -25,6 +25,7 @@ import numpy as np
 import carb
 
 import numpy as np
+
 
 class Unitree(Articulation):
     """For unitree based quadrupeds (A1 or Go1)"""
@@ -59,14 +60,14 @@ class Unitree(Articulation):
         """
         self.use_ros = use_ros
 
-        if self.use_ros: 
-            self.set_ros()
-            from utils.publisher import IMUPublisher
+        if self.use_ros:
+            self.set_ros(version="humble")
+            from utils.publisher import IMUPublisher, LidarPublisher
 
             self._imu_publisher = IMUPublisher()
 
             # TODO: make lidar publisher
-
+            self._lidar_publisher = LidarPublisher()
 
             # TODO: make force sensor publisher
 
@@ -103,13 +104,17 @@ class Unitree(Articulation):
         self._default_a1_state.base_frame.quat = np.array([0.0, 0.0, 0.0, 1.0])
         self._default_a1_state.base_frame.ang_vel = np.array([0.0, 0.0, 0.0])
         self._default_a1_state.base_frame.lin_vel = np.array([0.0, 0.0, 0.0])
-        self._default_a1_state.joint_pos = np.array([0.0, 1.2, -1.8, 0, 1.2, -1.8, 0.0, 1.2, -1.8, 0, 1.2, -1.8])
+        self._default_a1_state.joint_pos = np.array(
+            [0.0, 1.2, -1.8, 0, 1.2, -1.8, 0.0, 1.2, -1.8, 0, 1.2, -1.8])
         self._default_a1_state.joint_vel = np.zeros(12)
 
         self._goal = np.zeros(3)
         self.meters_per_unit = get_stage_units()
 
-        super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
+        super().__init__(prim_path=self._prim_path,
+                         name=name,
+                         position=position,
+                         orientation=orientation)
 
         # contact sensor setup
         self.feet_order = ["FL", "FR", "RL", "RR"]
@@ -148,10 +153,22 @@ class Unitree(Articulation):
         self.base_lin = np.zeros(3)
         self.ang_vel = np.zeros(3)
 
+        # lidar sensor setup
+        self.lidar_path = self._prim_path + "/trunk/lidar_joint"
+        self._lidar_sensor = LidarRtx(
+            prim_path=self.lidar_path + "/lidar_sensor",
+            name="lidar",
+            translation=np.array([0, 0, 0]),
+            orientation=np.array([1, 0, 0, 0]),
+        )
+        self._lidar_sensor.set_visibility(True)
+        self.lidar_data = np.zeros(1)
+
         # Controller
         self.physics_dt = physics_dt
         if way_points:
-            self._qp_controller = A1QPController(model, self.physics_dt, way_points)
+            self._qp_controller = A1QPController(model, self.physics_dt,
+                                                 way_points)
         else:
             self._qp_controller = A1QPController(model, self.physics_dt)
         self._qp_controller.setup()
@@ -170,7 +187,8 @@ class Unitree(Articulation):
         Raises:
             RuntimeError: When the DC Toolbox interface has not been configured.
         """
-        self.set_world_pose(position=state.base_frame.pos, orientation=state.base_frame.quat[[3, 0, 1, 2]])
+        self.set_world_pose(position=state.base_frame.pos,
+                            orientation=state.base_frame.quat[[3, 0, 1, 2]])
         self.set_linear_velocity(state.base_frame.lin_vel)
         self.set_angular_velocity(state.base_frame.ang_vel)
         # joint_state from the DC interface now has the order of
@@ -184,12 +202,12 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for setting state
-        self.set_joint_positions(
-            positions=np.asarray(np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32)
-        )
-        self.set_joint_velocities(
-            velocities=np.asarray(np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32)
-        )
+        self.set_joint_positions(positions=np.asarray(np.array(
+            state.joint_pos.reshape([4, 3]).T.flat),
+                                                      dtype=np.float32))
+        self.set_joint_velocities(velocities=np.asarray(np.array(
+            state.joint_vel.reshape([4, 3]).T.flat),
+                                                        dtype=np.float32))
         self.set_joint_efforts(np.zeros_like(state.joint_pos))
         return
 
@@ -225,6 +243,18 @@ class Unitree(Articulation):
 
         return
 
+    def update_lidar_sensor_data(self) -> None:
+        """[summary]
+        
+        Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
+        """
+        frame = self._lidar_sensor.get_current_frame()
+
+        if self.use_ros:
+            self._lidar_publisher.update(self.lidar_data)
+
+        return
+
     def update(self) -> None:
         """[summary]
         
@@ -233,6 +263,7 @@ class Unitree(Articulation):
 
         self.update_contact_sensor_data()
         self.update_imu_sensor_data()
+        self.update_lidar_sensor_data()
 
         # joint pos and vel from the DC interface
         self.joint_state = super().get_joints_state()
@@ -248,8 +279,10 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert DC order to controller order for joint info
-        self._state.joint_pos = np.array(self.joint_state.positions.reshape([3, 4]).T.flat)
-        self._state.joint_vel = np.array(self.joint_state.velocities.reshape([3, 4]).T.flat)
+        self._state.joint_pos = np.array(
+            self.joint_state.positions.reshape([3, 4]).T.flat)
+        self._state.joint_vel = np.array(
+            self.joint_state.velocities.reshape([3, 4]).T.flat)
 
         # base frame
         base_pose = self.get_world_pose()
@@ -266,7 +299,11 @@ class Unitree(Articulation):
 
         return
 
-    def advance(self, dt, goal, path_follow=False, auto_start=True) -> np.ndarray:
+    def advance(self,
+                dt,
+                goal,
+                path_follow=False,
+                auto_start=True) -> np.ndarray:
         """[summary]
         
         compute desired torque and set articulation effort to robot joints
@@ -287,7 +324,8 @@ class Unitree(Articulation):
         self.update()
         self._qp_controller.set_target_command(goal)
 
-        self._command.desired_joint_torque = self._qp_controller.advance(dt, self._measurement, path_follow, auto_start)
+        self._command.desired_joint_torque = self._qp_controller.advance(
+            dt, self._measurement, path_follow, auto_start)
 
         # joint_state from the DC interface now has the order of
         # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
@@ -300,7 +338,8 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for command torque
-        torque_reorder = np.array(self._command.desired_joint_torque.reshape([4, 3]).T.flat)
+        torque_reorder = np.array(
+            self._command.desired_joint_torque.reshape([4, 3]).T.flat)
         self.set_joint_efforts(np.asarray(torque_reorder, dtype=np.float32))
         return self._command
 
@@ -316,9 +355,6 @@ class Unitree(Articulation):
         for i in range(4):
             self._contact_sensors[i].initialize()
 
-        if self.use_ros:
-            self._imu_publisher.initialize()
-
         return
 
     def post_reset(self) -> None:
@@ -331,9 +367,6 @@ class Unitree(Articulation):
             self._contact_sensors[i].post_reset()
         self._qp_controller.reset()
         self.set_state(self._default_a1_state)
-
-        if self.use_ros:
-            self._imu_publisher.initialize()
 
         return
 

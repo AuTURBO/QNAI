@@ -25,7 +25,9 @@ import json
 import os
 import sys
 
-class A1_runner(object):
+
+class Go1_runner(object):
+
     def __init__(self, physics_dt, render_dt, way_points=None) -> None:
         """
         Summary
@@ -38,7 +40,9 @@ class A1_runner(object):
         way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
         
         """
-        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
+        self._world = World(stage_units_in_meters=1.0,
+                            physics_dt=physics_dt,
+                            rendering_dt=render_dt)
 
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
@@ -70,19 +74,17 @@ class A1_runner(object):
         #     print(env_asset_path)
         #     prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path,
+                                      "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
-            Unitree(
-                prim_path="/World/go1",
-                name="go1",
-                usd_path=robot_usd_path,
-                position=np.array([0, 0, 0.40]),
-                physics_dt=physics_dt,
-                model="go1",
-                way_points=way_points,
-                use_ros=True
-            )
-        )
+            Unitree(prim_path="/World/go1",
+                    name="go1",
+                    usd_path=robot_usd_path,
+                    position=np.array([0, 0, 0.40]),
+                    physics_dt=physics_dt,
+                    model="go1",
+                    way_points=way_points,
+                    use_ros=True))
 
         self._world.reset()
         self._enter_toggled = 0
@@ -122,8 +124,10 @@ class A1_runner(object):
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(
+            self._keyboard, self._sub_keyboard_event)
+        self._world.add_physics_callback("a1_advance",
+                                         callback_fn=self.on_physics_step)
 
         if way_points is None:
             self._path_follow = False
@@ -143,6 +147,9 @@ class A1_runner(object):
             self._event_flag = False
 
         self._robot.advance(step_size, self._base_command, self._path_follow)
+
+        # Publish ROS data
+        self.publish_ros_data()
 
     def run(self) -> None:
         """
@@ -169,7 +176,8 @@ class A1_runner(object):
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command[0:3] += np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command[0:3] += np.array(
+                    self._input_keyboard_mapping[event.input.name])
                 self._event_flag = True
 
             # enter, toggle the last command
@@ -184,7 +192,8 @@ class A1_runner(object):
         elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             # on release, the command is decremented
             if event.input.name in self._input_keyboard_mapping:
-                self._base_command[0:3] -= np.array(self._input_keyboard_mapping[event.input.name])
+                self._base_command[0:3] -= np.array(
+                    self._input_keyboard_mapping[event.input.name])
                 self._event_flag = True
             # enter, toggle the last command
             if event.input.name == "ENTER":
@@ -192,9 +201,47 @@ class A1_runner(object):
         # since no error, we are fine :)
         return True
 
+    def publish_ros_data(self):
+        """
+        [Summary]
+
+        Publish body pose, joint state, imu data
+        
+        """
+
+        self._robot._imu_publisher.publish()
+
+        # update all header timestamps
+        # ros_timestamp = rospy.get_rostime()
+        # self._msg_body_pose.header.stamp = ros_timestamp
+        # self._msg_joint_state.header.stamp = ros_timestamp
+        # self._msg_imu_debug.header.stamp = ros_timestamp
+        # self._msg_body_pose_with_cov.header.stamp = ros_timestamp
+
+        # # a) ground truth pose
+        # self._update_body_pose_msg(measurement)
+        # self._pub_body_pose.publish(self._msg_body_pose)
+        # # b) joint state and contact force
+        # self._update_msg_joint_state(measurement)
+        # self._pub_joint_state.publish(self._msg_joint_state)
+        # # c) IMU
+        # self._update_imu_msg(measurement)
+        # self._pub_imu_debug.publish(self._msg_imu_debug)
+        # # d) ground truth pose with covariance
+        # self._update_body_pose_with_cov_msg(measurement)
+        # self._pub_body_pose_with_cov.publish(self._msg_body_pose_with_cov)
+        return
+
+    """call backs"""
+
 
 parser = argparse.ArgumentParser(description="a1 quadruped demo")
-parser.add_argument("-w", "--waypoint", type=str, metavar="", required=False, help="file path to the waypoints")
+parser.add_argument("-w",
+                    "--waypoint",
+                    type=str,
+                    metavar="",
+                    required=False,
+                    help="file path to the waypoints")
 args, unknown = parser.parse_known_args()
 
 
@@ -213,7 +260,8 @@ def main():
             file = open(str(args.waypoint))
             waypoint_data = json.load(file)
             for waypoint in waypoint_data:
-                waypoint_pose.append(np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
+                waypoint_pose.append(
+                    np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
             # print(str(waypoint_pose))
 
         except FileNotFoundError:
@@ -221,11 +269,15 @@ def main():
             simulation_app.close()
             return
 
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=waypoint_pose)
+        runner = Go1_runner(physics_dt=physics_downtime,
+                            render_dt=16 * physics_downtime,
+                            way_points=waypoint_pose)
         simulation_app.update()
         runner.setup(way_points=waypoint)
     else:
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=None)
+        runner = Go1_runner(physics_dt=physics_downtime,
+                            render_dt=16 * physics_downtime,
+                            way_points=None)
         simulation_app.update()
         runner.setup(None)
 
