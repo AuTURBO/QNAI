@@ -209,7 +209,7 @@ class Go1_runner(object):
         
         """
 
-        self._robot._imu_publisher.publish()
+        # self._robot._imu_publisher.publish()
 
         # update all header timestamps
         # ros_timestamp = rospy.get_rostime()
