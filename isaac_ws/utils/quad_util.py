@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# TODO: deprecated, will be removed in the future
+
 import omni
 import omni.kit.commands
 from omni.isaac.core.utils.nucleus import get_assets_root_path
