@@ -198,10 +198,12 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for setting state
-        self.set_joint_positions(positions=np.asarray(
-            np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32))
-        self.set_joint_velocities(velocities=np.asarray(
-            np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32))
+        self.set_joint_positions(positions=np.asarray(np.array(
+            state.joint_pos.reshape([4, 3]).T.flat),
+                                                      dtype=np.float32))
+        self.set_joint_velocities(velocities=np.asarray(np.array(
+            state.joint_vel.reshape([4, 3]).T.flat),
+                                                        dtype=np.float32))
         self.set_joint_efforts(np.zeros_like(state.joint_pos))
 
     def update_contact_sensor_data(self) -> None:

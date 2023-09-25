@@ -74,7 +74,8 @@ class Go1_runner(object):
         #     print(env_asset_path)
         #     prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path,
+                                      "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
             Unitree(prim_path="/World/go1",
                     name="go1",
