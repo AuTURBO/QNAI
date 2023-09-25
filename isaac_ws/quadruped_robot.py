@@ -2,6 +2,7 @@
 This script loads the hospital environment and the quadruped robot.
 Author: Jinwon Kim
 Date: 2023-09-07
+# TODO: deprecated, will be removed in the future
 """
 
 import sys

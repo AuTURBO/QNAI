@@ -26,6 +26,8 @@ import carb
 
 import numpy as np
 
+from utils.omnigraph import omnigraph_helper
+
 
 class Unitree(Articulation):
     """For unitree based quadrupeds (A1 or Go1)"""
@@ -59,17 +61,6 @@ class Unitree(Articulation):
         
         """
         self.use_ros = use_ros
-
-        if self.use_ros:
-            self.set_ros(version="humble")
-            from utils.publisher import IMUPublisher, LidarPublisher
-
-            self._imu_publisher = IMUPublisher()
-
-            # TODO: make lidar publisher
-            self._lidar_publisher = LidarPublisher()
-
-            # TODO: make force sensor publisher
 
         self._stage = get_current_stage()
         self._prim_path = prim_path
@@ -174,6 +165,23 @@ class Unitree(Articulation):
         self._qp_controller.setup()
         self._dof_control_modes: List[int] = list()
 
+
+        self.omnigraph_helper = omnigraph_helper(self.use_ros)
+
+        if self.use_ros:
+            self.set_ros(version="foxy")
+            # from utils.publisher import IMUPublisher, LidarPublisher
+
+            # self._imu_publisher = IMUPublisher()
+
+            # TODO: make lidar publisher
+            # self._lidar_publisher = LidarPublisher()
+
+            # TODO: make force sensor publisher
+
+            self.omnigraph_helper.ros_clock()
+            self.omnigraph_helper.ros_imu(prim_path=self.imu_path + "/imu_sensor")
+
         return
 
     def set_state(self, state: A1State) -> None:
@@ -238,8 +246,8 @@ class Unitree(Articulation):
         self.base_lin = frame["lin_acc"]
         self.ang_vel = frame["ang_vel"]
 
-        if self.use_ros:
-            self._imu_publisher.update(self.base_lin, self.ang_vel)
+        # if self.use_ros:
+        #     self._imu_publisher.update(self.base_lin, self.ang_vel)
 
         return
 
@@ -250,8 +258,8 @@ class Unitree(Articulation):
         """
         frame = self._lidar_sensor.get_current_frame()
 
-        if self.use_ros:
-            self._lidar_publisher.update(self.lidar_data)
+        # if self.use_ros:
+        #     self._lidar_publisher.update(self.lidar_data)
 
         return
 
