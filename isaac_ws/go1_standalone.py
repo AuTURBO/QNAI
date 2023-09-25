@@ -1,3 +1,7 @@
+"""
+This file is go1 standalone python file.
+"""
+
 # Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
@@ -7,38 +11,34 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import argparse
+import json
+import os
+import numpy as np
+
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
-from utils.unitree import Unitree
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.prims import define_prim
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Gf, UsdGeom
-
 import omni.appwindow  # Contains handle to keyboard
-import numpy as np
+
 import carb
-import argparse
-import json
-import os
-import sys
+from utils.unitree import Unitree
 
 
 class Go1_runner(object):
 
     def __init__(self, physics_dt, render_dt, way_points=None) -> None:
-        """
-        Summary
-
-        creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-
+        """[summary]
+            creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
         Argument:
-        physics_dt {float} -- Physics downtime of the scene.
-        render_dt {float} -- Render downtime of the scene.
-        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
-        
+            physics_dt {float} -- Physics downtime of the scene.
+            render_dt {float} -- Render downtime of the scene.
+            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
         """
         self._world = World(stage_units_in_meters=1.0,
                             physics_dt=physics_dt,
@@ -112,11 +112,8 @@ class Go1_runner(object):
         }
 
     def setup(self, way_points=None) -> None:
-        """
-        [Summary]
-
-        Set unitree robot's default stance, set up keyboard listener and add physics callback
-        
+        """[summary]
+            Set unitree robot's default stance, set up keyboard listener and add physics callback
         """
 
         self._robot.set_state(self._robot._default_a1_state)
@@ -134,11 +131,8 @@ class Go1_runner(object):
             self._path_follow = True
 
     def on_physics_step(self, step_size) -> None:
-        """
-        [Summary]
-
-        Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+        """[summary]
+            Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
         """
 
         if self._event_flag:
@@ -148,23 +142,16 @@ class Go1_runner(object):
         self._robot.advance(step_size, self._base_command, self._path_follow)
 
     def run(self) -> None:
-        """
-        [Summary]
-
-        Step simulation based on rendering downtime
-        
+        """[summary]
+            Step simulation based on rendering downtime
         """
         # change to sim running
         while simulation_app.is_running():
             self._world.step(render=True)
-        return
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
-        """
-        [Summary]
-
-        Keyboard subscriber callback to when kit is updated.
-        
+        """[summary]
+            Keyboard subscriber callback to when kit is updated.
         """
         # reset event
         self._event_flag = False
@@ -209,11 +196,8 @@ args, unknown = parser.parse_known_args()
 
 
 def main():
-    """
-    [Summary]
-
-    Parse arguments and instantiate A1 runner
-    
+    """[summary]
+        Parse arguments and instantiate A1 runner
     """
     physics_downtime = 1 / 400.0
     if args.waypoint:
@@ -236,7 +220,7 @@ def main():
                             render_dt=16 * physics_downtime,
                             way_points=waypoint_pose)
         simulation_app.update()
-        runner.setup(way_points=waypoint)
+        runner.setup(way_points=waypoint_pose)
     else:
         runner = Go1_runner(physics_dt=physics_downtime,
                             render_dt=16 * physics_downtime,

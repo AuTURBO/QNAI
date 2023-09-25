@@ -6,8 +6,8 @@ creator: Jinwon Kim
 import omni.graph.core as og
 
 
-class omnigraph_helper():
-    """
+class OmnigraphHelper():
+    """[summary]
     This class is for generating omnigraph.
     """
 
@@ -22,9 +22,17 @@ class omnigraph_helper():
         else:
             self._ros_version = "ROS1"
             self._ros_bridge_version = "ros_bridge."
-        pass
+
+        self._clock_graph = None
+        self._on_tick = None
 
     def ros_clock(self):
+        """[summary]
+        ROS clock graph
+
+        Returns:
+            bool: True if success, False otherwise.
+        """
         try:
             (self._clock_graph, _, _, _) = og.Controller.edit(
                 {
@@ -53,12 +61,21 @@ class omnigraph_helper():
             )
             return True
 
-        except Exception as e:
-            print(e)
+        except Exception as error:
+            print(error)
 
             return False
 
     def ros_imu(self, prim_path):
+        """[summary]
+        ROS IMU graph
+
+        Args:
+            prim_path (str): prim_path of the imu sensor
+
+        Returns:
+            bool: True if success, False otherwise.
+        """
         try:
             (self._on_tick, _, _, _) = og.Controller.edit(
                 {
@@ -78,7 +95,7 @@ class omnigraph_helper():
             )
             return True
 
-        except Exception as e:
-            print(e)
+        except Exception as error:
+            print(error)
 
             return False

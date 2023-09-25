@@ -1,3 +1,7 @@
+"""
+This file is for quadruped robot control.
+"""
+
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
@@ -7,8 +11,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import omni.kit.commands
+from typing import Optional, List
+from collections import deque
+import numpy as np
+
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.sensor import _sensor
@@ -19,14 +25,9 @@ from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Comm
 from omni.isaac.quadruped.controllers import A1QPController
 from omni.isaac.sensor import ContactSensor, IMUSensor, LidarRtx
 from omni.isaac.range_sensor import _range_sensor
-from typing import Optional, List
-from collections import deque
-import numpy as np
 import carb
 
-import numpy as np
-
-from utils.omnigraph import omnigraph_helper
+from utils.omnigraph import OmnigraphHelper
 
 
 class Unitree(Articulation):
@@ -46,9 +47,7 @@ class Unitree(Articulation):
     ) -> None:
         """
         [Summary]
-        
         initialize robot, set up sensors and controller
-        
         Args:
             prim_path {str} -- prim path of the robot on the stage
             name {str} -- name of the quadruped
@@ -58,7 +57,6 @@ class Unitree(Articulation):
             orientation {np.ndarray} -- orientation of the robot
             model {str} -- robot model (can be either A1 or Go1)
             way_points {np.ndarray} -- waypoint and heading of the robot
-        
         """
         self.use_ros = use_ros
 
@@ -155,6 +153,9 @@ class Unitree(Articulation):
         self._lidar_sensor.set_visibility(True)
         self.lidar_data = np.zeros(1)
 
+        # joint state
+        self.joint_state = None
+
         # Controller
         self.physics_dt = physics_dt
         if way_points:
@@ -163,27 +164,22 @@ class Unitree(Articulation):
         else:
             self._qp_controller = A1QPController(model, self.physics_dt)
         self._qp_controller.setup()
-        self._dof_control_modes: List[int] = list()
+        self._dof_control_modes: List[int] = []
 
-        self.omnigraph_helper = omnigraph_helper(self.use_ros)
+        self._omni_graph_helper = OmnigraphHelper(self.use_ros)
 
         if self.use_ros:
             self.set_ros(version="foxy")
 
-            self.omnigraph_helper.ros_clock()
-            self.omnigraph_helper.ros_imu(prim_path=self.imu_path +
-                                          "/imu_sensor")
-
-        return
+            self._omni_graph_helper.ros_clock()
+            self._omni_graph_helper.ros_imu(prim_path=self.imu_path +
+                                            "/imu_sensor")
 
     def set_state(self, state: A1State) -> None:
         """[Summary]
-        
         Set the kinematic state of the robot.
-
         Args:
             state {A1State} -- The state of the robot to set.
-
         Raises:
             RuntimeError: When the DC Toolbox interface has not been configured.
         """
@@ -207,11 +203,9 @@ class Unitree(Articulation):
         self.set_joint_velocities(velocities=np.asarray(
             np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32))
         self.set_joint_efforts(np.zeros_like(state.joint_pos))
-        return
 
     def update_contact_sensor_data(self) -> None:
         """[summary]
-        
         Updates processed contact sensor data from the robot feets, store them in member variable foot_force
         """
         # Order: FL, FR, BL, BR
@@ -229,27 +223,20 @@ class Unitree(Articulation):
 
     def update_imu_sensor_data(self) -> None:
         """[summary]
-        
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
         frame = self._imu_sensor.get_current_frame()
         self.base_lin = frame["lin_acc"]
         self.ang_vel = frame["ang_vel"]
 
-        return
-
     def update_lidar_sensor_data(self) -> None:
         """[summary]
-        
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
-        frame = self._lidar_sensor.get_current_frame()
-
-        return
+        _ = self._lidar_sensor.get_current_frame()
 
     def update(self) -> None:
         """[summary]
-        
         update robot sensor variables, state variables in A1Measurement
         """
 
@@ -289,23 +276,18 @@ class Unitree(Articulation):
         self._measurement.base_ang_vel = np.asarray(self.ang_vel)
         self._measurement.base_lin_acc = np.asarray(self.base_lin)
 
-        return
-
     def advance(self,
                 dt,
                 goal,
                 path_follow=False,
                 auto_start=True) -> np.ndarray:
         """[summary]
-        
         compute desired torque and set articulation effort to robot joints
-        
         Argument:
         dt {float} -- Timestep update in the world.
         goal {List[int]} -- x velocity, y velocity, angular velocity, state switch
         path_follow {bool} -- true for following coordinates, false for keyboard control
         auto_start {bool} -- true for start trotting after 1 sec, false for start trotting after switch mode function is called
-
         Returns:
         np.ndarray -- The desired joint torques for the robot.
         """
@@ -337,7 +319,6 @@ class Unitree(Articulation):
 
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]
-
         initialize dc interface, set up drive mode and initial robot state
         """
         super().initialize(physics_sim_view=physics_sim_view)
@@ -347,11 +328,8 @@ class Unitree(Articulation):
         for i in range(4):
             self._contact_sensors[i].initialize()
 
-        return
-
     def post_reset(self) -> None:
         """[summary]
-
         post reset articulation and qp_controller
         """
         super().post_reset()
@@ -359,8 +337,6 @@ class Unitree(Articulation):
             self._contact_sensors[i].post_reset()
         self._qp_controller.reset()
         self.set_state(self._default_a1_state)
-
-        return
 
     def set_ros(self, version="foxy") -> None:
         """[summary]
