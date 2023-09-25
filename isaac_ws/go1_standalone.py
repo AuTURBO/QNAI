@@ -74,8 +74,7 @@ class Go1_runner(object):
         #     print(env_asset_path)
         #     prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path,
-                                      "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
             Unitree(prim_path="/World/go1",
                     name="go1",
@@ -148,9 +147,6 @@ class Go1_runner(object):
 
         self._robot.advance(step_size, self._base_command, self._path_follow)
 
-        # Publish ROS data
-        self.publish_ros_data()
-
     def run(self) -> None:
         """
         [Summary]
@@ -200,39 +196,6 @@ class Go1_runner(object):
                 self._enter_toggled = False
         # since no error, we are fine :)
         return True
-
-    def publish_ros_data(self):
-        """
-        [Summary]
-
-        Publish body pose, joint state, imu data
-        
-        """
-
-        # self._robot._imu_publisher.publish()
-
-        # update all header timestamps
-        # ros_timestamp = rospy.get_rostime()
-        # self._msg_body_pose.header.stamp = ros_timestamp
-        # self._msg_joint_state.header.stamp = ros_timestamp
-        # self._msg_imu_debug.header.stamp = ros_timestamp
-        # self._msg_body_pose_with_cov.header.stamp = ros_timestamp
-
-        # # a) ground truth pose
-        # self._update_body_pose_msg(measurement)
-        # self._pub_body_pose.publish(self._msg_body_pose)
-        # # b) joint state and contact force
-        # self._update_msg_joint_state(measurement)
-        # self._pub_joint_state.publish(self._msg_joint_state)
-        # # c) IMU
-        # self._update_imu_msg(measurement)
-        # self._pub_imu_debug.publish(self._msg_imu_debug)
-        # # d) ground truth pose with covariance
-        # self._update_body_pose_with_cov_msg(measurement)
-        # self._pub_body_pose_with_cov.publish(self._msg_body_pose_with_cov)
-        return
-
-    """call backs"""
 
 
 parser = argparse.ArgumentParser(description="a1 quadruped demo")

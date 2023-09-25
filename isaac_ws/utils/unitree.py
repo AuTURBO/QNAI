@@ -169,14 +169,6 @@ class Unitree(Articulation):
 
         if self.use_ros:
             self.set_ros(version="foxy")
-            # from utils.publisher import IMUPublisher, LidarPublisher
-
-            # self._imu_publisher = IMUPublisher()
-
-            # TODO: make lidar publisher
-            # self._lidar_publisher = LidarPublisher()
-
-            # TODO: make force sensor publisher
 
             self.omnigraph_helper.ros_clock()
             self.omnigraph_helper.ros_imu(prim_path=self.imu_path +
@@ -244,9 +236,6 @@ class Unitree(Articulation):
         self.base_lin = frame["lin_acc"]
         self.ang_vel = frame["ang_vel"]
 
-        # if self.use_ros:
-        #     self._imu_publisher.update(self.base_lin, self.ang_vel)
-
         return
 
     def update_lidar_sensor_data(self) -> None:
@@ -255,9 +244,6 @@ class Unitree(Articulation):
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
         frame = self._lidar_sensor.get_current_frame()
-
-        # if self.use_ros:
-        #     self._lidar_publisher.update(self.lidar_data)
 
         return
 
