@@ -66,7 +66,7 @@ class OmnigraphHelper():
 
             return False
 
-    def ros_imu(self, prim_path):
+    def ros_imu(self):
         """[summary]
         ROS IMU graph
 

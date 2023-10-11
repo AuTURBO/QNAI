@@ -17,7 +17,6 @@ import numpy as np
 
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.sensor import _sensor
 
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
@@ -25,7 +24,6 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
 from omni.isaac.quadruped.controllers import A1QPController
 from omni.isaac.sensor import ContactSensor, IMUSensor, LidarRtx
-from omni.isaac.range_sensor import _range_sensor
 import carb
 
 from utils.omnigraph import OmnigraphHelper

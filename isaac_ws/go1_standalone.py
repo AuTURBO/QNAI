@@ -152,7 +152,7 @@ class Go1Runner(object):
         while simulation_app.is_running():
             self._world.step(render=True)
 
-    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
+    def _sub_keyboard_event(self, event) -> bool:
         """[summary]
             Keyboard subscriber callback to when kit is updated.
         """
