@@ -37,11 +37,11 @@ class OmnigraphHelper():
             (self._clock_graph, _, _, _) = og.Controller.edit(
                 {
                     "graph_path":
-                    "/ROS_Clock",
+                        "/ROS_Clock",
                     "evaluator_name":
-                    "execution",
+                        "execution",
                     "pipeline_stage":
-                    og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+                        og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
                 },
                 {
                     self._keys.CREATE_NODES: [
@@ -80,11 +80,11 @@ class OmnigraphHelper():
             (self._on_tick, _, _, _) = og.Controller.edit(
                 {
                     "graph_path":
-                    "/ROS_IMU",
+                        "/ROS_IMU",
                     "evaluator_name":
-                    "execution",
+                        "execution",
                     "pipeline_stage":
-                    og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+                        og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
                 },
                 {
                     self._keys.CREATE_NODES: [

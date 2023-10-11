@@ -31,11 +31,14 @@ from utils.unitree import Unitree
 
 
 class Go1_runner(object):
+    """[summary]
+        main class for running the simulation
+    """
 
     def __init__(self, physics_dt, render_dt, way_points=None) -> None:
         """[summary]
             creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-        Argument:
+            Argument:
             physics_dt {float} -- Physics downtime of the scene.
             render_dt {float} -- Render downtime of the scene.
             way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
@@ -74,8 +77,7 @@ class Go1_runner(object):
         #     print(env_asset_path)
         #     prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path,
-                                      "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
             Unitree(prim_path="/World/go1",
                     name="go1",

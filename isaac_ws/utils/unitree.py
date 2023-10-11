@@ -33,6 +33,8 @@ from utils.omnigraph import OmnigraphHelper
 class Unitree(Articulation):
     """For unitree based quadrupeds (A1 or Go1)"""
 
+    FILTER_WINDOW_SIZE = 20
+
     def __init__(
         self,
         prim_path: str,
@@ -127,7 +129,6 @@ class Unitree(Articulation):
 
         self.foot_force = np.zeros(4)
         self.enable_foot_filter = True
-        self._FILTER_WINDOW_SIZE = 20
         self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
@@ -198,12 +199,10 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for setting state
-        self.set_joint_positions(positions=np.asarray(np.array(
-            state.joint_pos.reshape([4, 3]).T.flat),
-                                                      dtype=np.float32))
-        self.set_joint_velocities(velocities=np.asarray(np.array(
-            state.joint_vel.reshape([4, 3]).T.flat),
-                                                        dtype=np.float32))
+        self.set_joint_positions(positions=np.asarray(
+            np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32))
+        self.set_joint_velocities(velocities=np.asarray(
+            np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32))
         self.set_joint_efforts(np.zeros_like(state.joint_pos))
 
     def update_contact_sensor_data(self) -> None:
@@ -216,7 +215,7 @@ class Unitree(Articulation):
             if "force" in frame:
                 if self.enable_foot_filter:
                     self._foot_filters[i].append(frame["force"])
-                    if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
+                    if len(self._foot_filters[i]) > Unitree.FILTER_WINDOW_SIZE:
                         self._foot_filters[i].popleft()
                     self.foot_force[i] = np.mean(self._foot_filters[i])
 
