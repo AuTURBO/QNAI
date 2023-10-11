@@ -30,7 +30,7 @@ import carb
 from utils.unitree import Unitree
 
 
-class Go1_runner(object):
+class Go1Runner(object):
     """[summary]
         main class for running the simulation
     """
@@ -219,15 +219,15 @@ def main():
             simulation_app.close()
             return
 
-        runner = Go1_runner(physics_dt=physics_downtime,
-                            render_dt=16 * physics_downtime,
-                            way_points=waypoint_pose)
+        runner = Go1Runner(physics_dt=physics_downtime,
+                           render_dt=16 * physics_downtime,
+                           way_points=waypoint_pose)
         simulation_app.update()
         runner.setup(way_points=waypoint_pose)
     else:
-        runner = Go1_runner(physics_dt=physics_downtime,
-                            render_dt=16 * physics_downtime,
-                            way_points=None)
+        runner = Go1Runner(physics_dt=physics_downtime,
+                           render_dt=16 * physics_downtime,
+                           way_points=None)
         simulation_app.update()
         runner.setup(None)
 
