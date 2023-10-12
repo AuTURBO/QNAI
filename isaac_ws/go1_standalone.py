@@ -30,18 +30,15 @@ import carb
 from utils.unitree import Unitree
 
 
-class Go1Runner(object):
-    """[summary]
-        main class for running the simulation
-    """
+class Go1_runner(object):
 
     def __init__(self, physics_dt, render_dt, way_points=None) -> None:
         """[summary]
             creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-            Argument:
+        Argument:
             physics_dt {float} -- Physics downtime of the scene.
             render_dt {float} -- Render downtime of the scene.
-            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
+            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
         """
         self._world = World(stage_units_in_meters=1.0,
                             physics_dt=physics_dt,
@@ -77,7 +74,8 @@ class Go1Runner(object):
         #     print(env_asset_path)
         #     prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path,
+                                      "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
             Unitree(prim_path="/World/go1",
                     name="go1",
@@ -114,20 +112,12 @@ class Go1Runner(object):
             "M": [0.0, 0.0, -1.0],
         }
 
-    @property
-    def world(self) -> World:
-        """[summary]
-        Returns:
-            A1State -- default a1 state
-        """
-        return self._world
-
     def setup(self, way_points=None) -> None:
         """[summary]
             Set unitree robot's default stance, set up keyboard listener and add physics callback
         """
 
-        self._robot.set_state(self._robot.default_a1_state)
+        self._robot.set_state(self._robot._default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
@@ -147,7 +137,7 @@ class Go1Runner(object):
         """
 
         if self._event_flag:
-            self._robot.qp_controller.switch_mode()
+            self._robot._qp_controller.switch_mode()
             self._event_flag = False
 
         self._robot.advance(step_size, self._base_command, self._path_follow)
@@ -160,7 +150,7 @@ class Go1Runner(object):
         while simulation_app.is_running():
             self._world.step(render=True)
 
-    def _sub_keyboard_event(self, event) -> bool:
+    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """[summary]
             Keyboard subscriber callback to when kit is updated.
         """
@@ -215,12 +205,11 @@ def main():
         waypoint_pose = []
         try:
             print(str(args.waypoint))
-            with open(str(args.waypoint), encoding="utf-8") as file:
-                waypoint_data = json.load(file)
-                for waypoint in waypoint_data:
-                    waypoint_pose.append(
-                        np.array(
-                            [waypoint["x"], waypoint["y"], waypoint["rad"]]))
+            file = open(str(args.waypoint))
+            waypoint_data = json.load(file)
+            for waypoint in waypoint_data:
+                waypoint_pose.append(
+                    np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
             # print(str(waypoint_pose))
 
         except FileNotFoundError:
@@ -228,21 +217,21 @@ def main():
             simulation_app.close()
             return
 
-        runner = Go1Runner(physics_dt=physics_downtime,
-                           render_dt=16 * physics_downtime,
-                           way_points=waypoint_pose)
+        runner = Go1_runner(physics_dt=physics_downtime,
+                            render_dt=16 * physics_downtime,
+                            way_points=waypoint_pose)
         simulation_app.update()
         runner.setup(way_points=waypoint_pose)
     else:
-        runner = Go1Runner(physics_dt=physics_downtime,
-                           render_dt=16 * physics_downtime,
-                           way_points=None)
+        runner = Go1_runner(physics_dt=physics_downtime,
+                            render_dt=16 * physics_downtime,
+                            way_points=None)
         simulation_app.update()
         runner.setup(None)
 
     # an extra reset is needed to register
-    runner.world.reset()
-    runner.world.reset()
+    runner._world.reset()
+    runner._world.reset()
     runner.run()
     simulation_app.close()
 
