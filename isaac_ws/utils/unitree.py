@@ -15,15 +15,14 @@ from typing import Optional, List
 from collections import deque
 import numpy as np
 
+from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-
-from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
 from omni.isaac.quadruped.controllers import A1QPController
-from omni.isaac.sensor import ContactSensor, IMUSensor, LidarRtx
+from omni.isaac.sensor import ContactSensor
 import carb
 
 from utils.omnigraph import OmnigraphHelper
@@ -131,27 +130,26 @@ class Unitree(Articulation):
         self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
-        self.imu_path = self._prim_path + "/imu_link"
-        self._imu_sensor = IMUSensor(
-            prim_path=self.imu_path + "/imu_sensor",
-            name="imu",
-            dt=physics_dt,
-            translation=np.array([0, 0, 0]),
-            orientation=np.array([1, 0, 0, 0]),
-        )
+        # self.imu_path = self._prim_path + "/imu_link"
+        # self._imu_sensor = IMUSensor(
+        #     prim_path=self.imu_path + "/imu_sensor",
+        #     name="imu",
+        #     dt=physics_dt,
+        #     translation=np.array([0, 0, 0]),
+        #     orientation=np.array([1, 0, 0, 0]),
+        # )
         self.base_lin = np.zeros(3)
         self.ang_vel = np.zeros(3)
 
         # lidar sensor setup
-        self.lidar_path = self._prim_path + "/trunk/lidar_joint"
-        self._lidar_sensor = LidarRtx(
-            prim_path=self.lidar_path + "/lidar_sensor",
-            name="lidar",
-            translation=np.array([0, 0, 0]),
-            orientation=np.array([1, 0, 0, 0]),
-        )
-        self._lidar_sensor.set_visibility(True)
-        self.lidar_data = np.zeros(1)
+        # self.lidar_path = self._prim_path + "/trunk/lidar"
+        # self._lidar_sensor = LidarRtx(
+        #     prim_path=self.lidar_path + "/lidar_sensor",
+        #     name="lidar",
+        #     translation=np.array([0, 0, 0]),
+        #     orientation=np.array([1, 0, 0, 0]),
+        # )
+        # self._lidar_sensor.set_visibility(True)
 
         # joint state
         self.joint_state = None
@@ -172,24 +170,24 @@ class Unitree(Articulation):
             self.set_ros(version="foxy")
 
             self._omni_graph_helper.ros_clock()
-            self._omni_graph_helper.ros_imu(prim_path=self.imu_path +
-                                            "/imu_sensor")
-
-    @property
-    def default_a1_state(self) -> A1State:
-        """[summary]
-        Returns:
-            A1State -- default a1 state
-        """
-        return self._default_a1_state
+            # self._omni_graph_helper.ros_imu(prim_path=self.imu_path +
+            #                                 "/imu_sensor")
 
     @property
     def qp_controller(self) -> A1QPController:
         """[summary]
         Returns:
-            A1QPController -- qp controller
+            A1QPController -- A1QPController object
         """
         return self._qp_controller
+
+    @property
+    def default_a1_state(self) -> A1State:
+        """[summary]
+        Returns:
+            A1State -- default A1State object
+        """
+        return self._default_a1_state
 
     def set_state(self, state: A1State) -> None:
         """[Summary]
@@ -257,8 +255,8 @@ class Unitree(Articulation):
         """
 
         self.update_contact_sensor_data()
-        self.update_imu_sensor_data()
-        self.update_lidar_sensor_data()
+        # self.update_imu_sensor_data()
+        # self.update_lidar_sensor_data()
 
         # joint pos and vel from the DC interface
         self.joint_state = super().get_joints_state()

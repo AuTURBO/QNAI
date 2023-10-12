@@ -32,7 +32,7 @@ from utils.unitree import Unitree
 
 class Go1Runner(object):
     """[summary]
-        main class for running the simulation
+        Main class to run the simulation
     """
 
     def __init__(self, physics_dt, render_dt, way_points=None) -> None:
@@ -117,8 +117,7 @@ class Go1Runner(object):
     @property
     def world(self) -> World:
         """[summary]
-        Returns:
-            A1State -- default a1 state
+            Returns the world object
         """
         return self._world
 
