@@ -1,5 +1,5 @@
 """
-This script is test file 
+This script is test file
 Author: Jinwon Kim
 Date: 2023-09-17
 """

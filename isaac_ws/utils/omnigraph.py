@@ -61,12 +61,16 @@ class OmnigraphHelper():
             )
             return True
 
+        # TODO: catch specific exception and remove below pylint error.
+        # pylint: disable=broad-except
         except Exception as error:
             print(error)
 
             return False
 
-    def ros_imu(self):
+    # TODO: use prim_path variable to remove below pylint error.
+    # pylint: disable=unused-argument
+    def ros_imu(self, prim_path):
         """[summary]
         ROS IMU graph
 
@@ -95,6 +99,8 @@ class OmnigraphHelper():
             )
             return True
 
+        # TODO: catch specific exception and remove below pylint error.
+        # pylint: disable=broad-except
         except Exception as error:
             print(error)
 

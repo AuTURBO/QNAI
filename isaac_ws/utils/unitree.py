@@ -175,6 +175,22 @@ class Unitree(Articulation):
             self._omni_graph_helper.ros_imu(prim_path=self.imu_path +
                                             "/imu_sensor")
 
+    @property
+    def default_a1_state(self) -> A1State:
+        """[summary]
+        Returns:
+            A1State -- default a1 state
+        """
+        return self._default_a1_state
+
+    @property
+    def qp_controller(self) -> A1QPController:
+        """[summary]
+        Returns:
+            A1QPController -- qp controller
+        """
+        return self._qp_controller
+
     def set_state(self, state: A1State) -> None:
         """[Summary]
         Set the kinematic state of the robot.

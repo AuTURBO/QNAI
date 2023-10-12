@@ -41,7 +41,7 @@ class Go1Runner(object):
             Argument:
             physics_dt {float} -- Physics downtime of the scene.
             render_dt {float} -- Render downtime of the scene.
-            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
+            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
         """
         self._world = World(stage_units_in_meters=1.0,
                             physics_dt=physics_dt,
@@ -114,12 +114,20 @@ class Go1Runner(object):
             "M": [0.0, 0.0, -1.0],
         }
 
+    @property
+    def world(self) -> World:
+        """[summary]
+        Returns:
+            A1State -- default a1 state
+        """
+        return self._world
+
     def setup(self, way_points=None) -> None:
         """[summary]
             Set unitree robot's default stance, set up keyboard listener and add physics callback
         """
 
-        self._robot.set_state(self._robot._default_a1_state)
+        self._robot.set_state(self._robot.default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
@@ -139,7 +147,7 @@ class Go1Runner(object):
         """
 
         if self._event_flag:
-            self._robot._qp_controller.switch_mode()
+            self._robot.qp_controller.switch_mode()
             self._event_flag = False
 
         self._robot.advance(step_size, self._base_command, self._path_follow)
@@ -207,11 +215,12 @@ def main():
         waypoint_pose = []
         try:
             print(str(args.waypoint))
-            file = open(str(args.waypoint))
-            waypoint_data = json.load(file)
-            for waypoint in waypoint_data:
-                waypoint_pose.append(
-                    np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
+            with open(str(args.waypoint), encoding="utf-8") as file:
+                waypoint_data = json.load(file)
+                for waypoint in waypoint_data:
+                    waypoint_pose.append(
+                        np.array(
+                            [waypoint["x"], waypoint["y"], waypoint["rad"]]))
             # print(str(waypoint_pose))
 
         except FileNotFoundError:
@@ -232,8 +241,8 @@ def main():
         runner.setup(None)
 
     # an extra reset is needed to register
-    runner._world.reset()
-    runner._world.reset()
+    runner.world.reset()
+    runner.world.reset()
     runner.run()
     simulation_app.close()
 
