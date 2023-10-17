@@ -88,7 +88,6 @@ class Go1Runner(object):
                     way_points=way_points,
                     use_ros=True))
 
-        self._world.reset()
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False
