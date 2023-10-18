@@ -43,7 +43,7 @@ class Unitree(Articulation):
         orientation: Optional[np.ndarray] = None,
         model: Optional[str] = "A1",
         way_points: Optional[np.ndarray] = None,
-        use_ros: Optional[bool] = False,
+        ros_version: Optional[str] = "foxy",
     ) -> None:
         """
         [Summary]
@@ -58,7 +58,7 @@ class Unitree(Articulation):
             model {str} -- robot model (can be either A1 or Go1)
             way_points {np.ndarray} -- waypoint and heading of the robot
         """
-        self.use_ros = use_ros
+        self.ros_version = ros_version
 
         self._stage = get_current_stage()
         self._prim_path = prim_path
@@ -129,27 +129,8 @@ class Unitree(Articulation):
         self.enable_foot_filter = True
         self._foot_filters = [deque(), deque(), deque(), deque()]
 
-        # imu sensor setup
-        # self.imu_path = self._prim_path + "/imu_link"
-        # self._imu_sensor = IMUSensor(
-        #     prim_path=self.imu_path + "/imu_sensor",
-        #     name="imu",
-        #     dt=physics_dt,
-        #     translation=np.array([0, 0, 0]),
-        #     orientation=np.array([1, 0, 0, 0]),
-        # )
         self.base_lin = np.zeros(3)
         self.ang_vel = np.zeros(3)
-
-        # lidar sensor setup
-        # self.lidar_path = self._prim_path + "/trunk/lidar"
-        # self._lidar_sensor = LidarRtx(
-        #     prim_path=self.lidar_path + "/lidar_sensor",
-        #     name="lidar",
-        #     translation=np.array([0, 0, 0]),
-        #     orientation=np.array([1, 0, 0, 0]),
-        # )
-        # self._lidar_sensor.set_visibility(True)
 
         # joint state
         self.joint_state = None
@@ -164,14 +145,11 @@ class Unitree(Articulation):
         self._qp_controller.setup()
         self._dof_control_modes: List[int] = []
 
-        self._omni_graph_helper = OmnigraphHelper(self.use_ros)
+        self._omni_graph_helper = OmnigraphHelper(self.ros_version)
 
-        if self.use_ros:
-            self.set_ros(version="foxy")
+        self.set_ros(version=self.ros_version)
 
-            self._omni_graph_helper.ros_clock()
-            # self._omni_graph_helper.ros_imu(prim_path=self.imu_path +
-            #                                 "/imu_sensor")
+        self._omni_graph_helper.ros_clock()
 
     @property
     def qp_controller(self) -> A1QPController:
@@ -235,28 +213,12 @@ class Unitree(Articulation):
                 else:
                     self.foot_force[i] = frame["force"]
 
-    def update_imu_sensor_data(self) -> None:
-        """[summary]
-        Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
-        """
-        frame = self._imu_sensor.get_current_frame()
-        self.base_lin = frame["lin_acc"]
-        self.ang_vel = frame["ang_vel"]
-
-    def update_lidar_sensor_data(self) -> None:
-        """[summary]
-        Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
-        """
-        _ = self._lidar_sensor.get_current_frame()
-
     def update(self) -> None:
         """[summary]
         update robot sensor variables, state variables in A1Measurement
         """
 
         self.update_contact_sensor_data()
-        # self.update_imu_sensor_data()
-        # self.update_lidar_sensor_data()
 
         # joint pos and vel from the DC interface
         self.joint_state = super().get_joints_state()
