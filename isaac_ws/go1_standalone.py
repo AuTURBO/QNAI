@@ -86,7 +86,7 @@ class Go1Runner(object):
                     physics_dt=physics_dt,
                     model="go1",
                     way_points=way_points,
-                    use_ros=True))
+                    ros_version="humble"))
 
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
