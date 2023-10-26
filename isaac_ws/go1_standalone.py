@@ -24,7 +24,6 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.core.utils.prims import define_prim
 from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.appwindow  # Contains handle to keyboard
 
 import carb
