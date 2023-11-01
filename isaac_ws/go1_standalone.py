@@ -35,9 +35,11 @@ class Go1Runner(object):
     Main class to run the simulation
     """
 
-    def __init__(
-        self, physics_dt, render_dt, way_points=None, init_pose=np.array([0, 0, 0.40])
-    ) -> None:
+    def __init__(self,
+                 physics_dt,
+                 render_dt,
+                 way_points=None,
+                 init_pose=np.array([0, 0, 0.40])) -> None:
         """[summary]
         creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
         Argument:
@@ -46,9 +48,9 @@ class Go1Runner(object):
         way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
         init_pose {List[float]} -- x, y, z
         """
-        self._world = World(
-            stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt
-        )
+        self._world = World(stage_units_in_meters=1.0,
+                            physics_dt=physics_dt,
+                            rendering_dt=render_dt)
 
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -64,11 +66,13 @@ class Go1Runner(object):
         prim = get_prim_at_path("/World/hospital")
         if not prim.IsValid():
             prim = define_prim("/World/hospital", "Xform")
-            env_asset_path = os.path.join(assets_root_path, "Assets/Envs/hospital.usd")
+            env_asset_path = os.path.join(assets_root_path,
+                                          "Assets/Envs/hospital.usd")
             print(env_asset_path)
             prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path,
+                                      "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
             Unitree(
                 prim_path="/World/go1",
@@ -79,8 +83,7 @@ class Go1Runner(object):
                 model="go1",
                 way_points=way_points,
                 ros_version="humble",
-            )
-        )
+            ))
 
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
@@ -124,9 +127,9 @@ class Go1Runner(object):
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(
-            self._keyboard, self._sub_keyboard_event
-        )
-        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
+            self._keyboard, self._sub_keyboard_event)
+        self._world.add_physics_callback("a1_advance",
+                                         callback_fn=self.on_physics_step)
 
         if way_points is None:
             self._path_follow = False
@@ -163,8 +166,7 @@ class Go1Runner(object):
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
                 self._base_command[0:3] += np.array(
-                    self._input_keyboard_mapping[event.input.name]
-                )
+                    self._input_keyboard_mapping[event.input.name])
                 self._event_flag = True
 
             # enter, toggle the last command
@@ -180,8 +182,7 @@ class Go1Runner(object):
             # on release, the command is decremented
             if event.input.name in self._input_keyboard_mapping:
                 self._base_command[0:3] -= np.array(
-                    self._input_keyboard_mapping[event.input.name]
-                )
+                    self._input_keyboard_mapping[event.input.name])
                 self._event_flag = True
             # enter, toggle the last command
             if event.input.name == "ENTER":
@@ -216,8 +217,8 @@ def main():
                 waypoint_data = json.load(file)
                 for waypoint in waypoint_data:
                     waypoint_pose.append(
-                        np.array([waypoint["x"], waypoint["y"], waypoint["rad"]])
-                    )
+                        np.array(
+                            [waypoint["x"], waypoint["y"], waypoint["rad"]]))
             # print(str(waypoint_pose))
 
         except FileNotFoundError:
