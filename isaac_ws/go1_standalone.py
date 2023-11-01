@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import numpy as np
+import sys
 
 from omni.isaac.kit import SimulationApp
 
@@ -23,12 +24,10 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.core.utils.prims import define_prim
 from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.appwindow  # Contains handle to keyboard
 
 import carb
 from utils.unitree import Unitree
-
 
 class Go1Runner(object):
     """[summary]
@@ -47,35 +46,35 @@ class Go1Runner(object):
                             physics_dt=physics_dt,
                             rendering_dt=render_dt)
 
-        assets_root_path = get_assets_root_path()
-        if assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
+        # assets_root_path = get_assets_root_path()
+        # if assets_root_path is None:
+        #     carb.log_error("Could not find Isaac Sim assets folder")
 
-        # spawn scene
-        prim = get_prim_at_path("/World/Warehouse")
-        if not prim.IsValid():
-            prim = define_prim("/World/Warehouse", "Xform")
-            asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-            prim.GetReferences().AddReference(asset_path)
+        # # spawn scene
+        # prim = get_prim_at_path("/World/Warehouse")
+        # if not prim.IsValid():
+        #     prim = define_prim("/World/Warehouse", "Xform")
+        #     asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+        #     prim.GetReferences().AddReference(asset_path)
 
         # TODO: change it our environment
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
 
         assets_root_path = current_script_directory
-        # if assets_root_path is None:
-        #     carb.log_error("Could not find Isaac Sim assets folder")
-        #     simulation_app.close()
-        #     sys.exit()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            simulation_app.close()
+            sys.exit()
 
-        # print("asset_path: ", assets_root_path)
+        print("asset_path: ", assets_root_path)
 
-        # # spawn scene
-        # prim = get_prim_at_path("/World/hospital")
-        # if not prim.IsValid():
-        #     prim = define_prim("/World/hospital", "Xform")
-        #     env_asset_path = os.path.join(assets_root_path, "Assets/Envs/hospital2.usd")
-        #     print(env_asset_path)
-        #     prim.GetReferences().AddReference(env_asset_path)
+        # spawn scene
+        prim = get_prim_at_path("/World/hospital")
+        if not prim.IsValid():
+            prim = define_prim("/World/hospital", "Xform")
+            env_asset_path = os.path.join(assets_root_path, "Assets/Envs/hospital.usd")
+            print(env_asset_path)
+            prim.GetReferences().AddReference(env_asset_path)
 
         robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
@@ -94,23 +93,23 @@ class Go1Runner(object):
         # bindings for keyboard to command
         self._input_keyboard_mapping = {
             # forward command
-            "NUMPAD_8": [1.8, 0.0, 0.0],
-            "UP": [1.8, 0.0, 0.0],
+            "NUMPAD_8": [15.00, 0.0, 0.0],
+            "UP": [15.00, 0.0, 0.0],
             # back command
-            "NUMPAD_2": [-1.8, 0.0, 0.0],
-            "DOWN": [-1.8, 0.0, 0.0],
+            "NUMPAD_2": [-15.00, 0.0, 0.0],
+            "DOWN": [-15.00, 0.0, 0.0],
             # left command
-            "NUMPAD_6": [0.0, -1.8, 0.0],
-            "RIGHT": [0.0, -1.8, 0.0],
+            "NUMPAD_6": [0.0, -15.00, 0.0],
+            "RIGHT": [0.0, -15.00, 0.0],
             # right command
-            "NUMPAD_4": [0.0, 1.8, 0.0],
-            "LEFT": [0.0, 1.8, 0.0],
+            "NUMPAD_4": [0.0, 15.00, 0.0],
+            "LEFT": [0.0, 15.00, 0.0],
             # yaw command (positive)
-            "NUMPAD_7": [0.0, 0.0, 1.0],
-            "N": [0.0, 0.0, 1.0],
+            "NUMPAD_7": [0.0, 0.0, 5.0],
+            "N": [0.0, 0.0, 5.0],
             # yaw command (negative)
-            "NUMPAD_9": [0.0, 0.0, -1.0],
-            "M": [0.0, 0.0, -1.0],
+            "NUMPAD_9": [0.0, 0.0, -5.0],
+            "M": [0.0, 0.0, -5.0],
         }
 
     @property
