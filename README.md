@@ -27,6 +27,13 @@ isaac_ws/Assets/Envs
 isaac_ws/Assets/Robots
 ```
 
+3. anymal_c.usd + materials
+
+```bash
+# locate the directory below
+isaac_ws/Assets/Robots
+```
+
 Now you can easily launch the python file in the isaac_ws folder using VScode.
 
 if you want to know more details, show the [isaac sim documentation](https://docs.omniverse.nvidia.com/isaacsim/latest/install_python.html).
