@@ -82,7 +82,7 @@ class AnymalRunner(object):
             Anymal(prim_path="/World/Anymal",
                    name="Anymal",
                    usd_path=robot_usd_path,
-                   position=np.array([0, 0, 0.70]),
+                   position=np.array([-30, 10, 0.70]),
                    ros_version="humble",
                    ros_domain_id="10"))
 

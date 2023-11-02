@@ -209,7 +209,8 @@ class Anymal(Articulation):
                 pass
         return obs
 
-    def advance(self, command):
+    # pylint: disable=unused-argument
+    def advance(self, dt, command):
         """[summary]
 
         compute the desired torques and apply them to the articulation
