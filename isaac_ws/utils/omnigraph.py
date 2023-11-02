@@ -36,9 +36,12 @@ class OmnigraphHelper:
         try:
             (self._clock_graph, _, _, _) = og.Controller.edit(
                 {
-                    "graph_path": "/ROS_Clock",
-                    "evaluator_name": "execution",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+                    "graph_path":
+                    "/ROS_Clock",
+                    "evaluator_name":
+                    "execution",
+                    "pipeline_stage":
+                    og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
                 },
                 {
                     self._keys.CREATE_NODES: [
@@ -48,54 +51,27 @@ class OmnigraphHelper:
                             "omni.isaac.core_nodes.IsaacReadSimulationTime",
                         ),
                         (
-                            "publishClock",
-                            "omni.isaac."
-                            + self._ros_bridge_version
-                            + self._ros_version
-                            + "PublishClock",
+                            "ROS2Context",
+                            "omni.isaac." + self._ros_bridge_version +
+                            self._ros_version + "Context",
                         ),
-                    ],
-                    self._keys.CONNECT: [
-                        ("OnTick.outputs:tick", "publishClock.inputs:execIn"),
                         (
-                            "readSimTime.outputs:simulationTime",
-                            "publishClock.inputs:timeStamp",
+                            "publishClock",
+                            "omni.isaac." + self._ros_bridge_version +
+                            self._ros_version + "PublishClock",
                         ),
                     ],
-                },
-            )
-            return True
-
-        # TODO: catch specific exception and remove below pylint error.
-        # pylint: disable=broad-except
-        except Exception as error:
-            print(error)
-
-            return False
-
-    # TODO: use prim_path variable to remove below pylint error.
-    # pylint: disable=unused-argument
-    def ros_imu(self, prim_path):
-        """[summary]
-        ROS IMU graph
-
-        Args:
-            prim_path (str): prim_path of the imu sensor
-
-        Returns:
-            bool: True if success, False otherwise.
-        """
-        try:
-            (self._on_tick, _, _, _) = og.Controller.edit(
-                {
-                    "graph_path": "/ROS_IMU",
-                    "evaluator_name": "execution",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
-                },
-                {
-                    self._keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        # ("IsaacReadIMUNode")
+                    self._keys.CONNECT:
+                    [("OnTick.outputs:tick", "publishClock.inputs:execIn"),
+                     (
+                         "readSimTime.outputs:simulationTime",
+                         "publishClock.inputs:timeStamp",
+                     ),
+                     ("ROS2Context.outputs:context",
+                      "publishClock.inputs:context")],
+                    self._keys.SET_VALUES: [
+                        ("ROS2Context.inputs:domain_id", 10),
+                        ("ROS2Context.inputs:useDomainIDEnvVar", True),
                     ]
                 },
             )

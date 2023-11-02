@@ -30,21 +30,22 @@ import numpy as np
 import torch
 import carb
 
+import os
+
 from utils.omnigraph import OmnigraphHelper
 
 
 class Anymal(Articulation):
     """The ANYmal quadruped"""
 
-    def __init__(
-        self,
-        prim_path: str,
-        name: str = "anymal",
-        usd_path: Optional[str] = None,
-        position: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        ros_version: Optional[str] = "foxy",
-    ) -> None:
+    def __init__(self,
+                 prim_path: str,
+                 name: str = "anymal",
+                 usd_path: Optional[str] = None,
+                 position: Optional[np.ndarray] = None,
+                 orientation: Optional[np.ndarray] = None,
+                 ros_version: Optional[str] = "humble",
+                 ros_domain_id: str = "0") -> None:
         """
         [Summary]
 
@@ -77,14 +78,17 @@ class Anymal(Articulation):
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)
 
-        super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
+        super().__init__(prim_path=self._prim_path,
+                         name=name,
+                         position=position,
+                         orientation=orientation)
 
-        self._dof_control_modes: List[int] = list()
+        self._dof_control_modes: List[int] = []
 
         # Policy
-        file_content = omni.client.read_file(assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/policy_1.pt")[
-            2
-        ]
+        file_content = omni.client.read_file(
+            assets_root_path +
+            "/Isaac/Samples/Quadruped/Anymal_Policies/policy_1.pt")[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
 
         self._policy = torch.jit.load(file)
@@ -93,14 +97,15 @@ class Anymal(Articulation):
         self._joint_pos_scale = 1.0
         self._joint_vel_scale = 0.05
         self._action_scale = 0.5
-        self._default_joint_pos = np.array([0.0, 0.4, -0.8, 0.0, -0.4, 0.8, -0.0, 0.4, -0.8, -0.0, -0.4, 0.8])
+        self._default_joint_pos = np.array(
+            [0.0, 0.4, -0.8, 0.0, -0.4, 0.8, -0.0, 0.4, -0.8, -0.0, -0.4, 0.8])
         self._previous_action = np.zeros(12)
         self._policy_counter = 0
 
         # Actuator network
         file_content = omni.client.read_file(
-            assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt"
-        )[2]
+            assets_root_path +
+            "/Isaac/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt")[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
         self._actuator_network = LstmSeaNetwork()
         self._actuator_network.setup(file, self._default_joint_pos)
@@ -113,15 +118,15 @@ class Anymal(Articulation):
         self._scan_points = np.zeros((grid_x.size, 3))
         self._scan_points[:, 0] = grid_x.transpose().flatten()
         self._scan_points[:, 1] = grid_y.transpose().flatten()
-        self.physx_query_interface = omni.physx.get_physx_scene_query_interface()
+        self.physx_query_interface = omni.physx.get_physx_scene_query_interface(
+        )
         self._query_info = []
 
         # Set ROS
-
+        # Set $ROS_DOMAIN_ID environment variable
+        os.environ["ROS_DOMAIN_ID"] = ros_domain_id
         self._omni_graph_helper = OmnigraphHelper(self._ros_version)
-
         self.set_ros(version=self._ros_version)
-
         self._omni_graph_helper.ros_clock()
 
     def _hit_report_callback(self, hit):
@@ -142,12 +147,12 @@ class Anymal(Articulation):
         np.ndarray -- The observation vector.
 
         """
-        lin_vel_I = self.get_linear_velocity()
-        ang_vel_I = self.get_angular_velocity()
-        pos_IB, q_IB = self.get_world_pose()
+        lin_vel_I = self.get_linear_velocity()  # pylint: disable=invalid-name
+        ang_vel_I = self.get_angular_velocity()  # pylint: disable=invalid-name
+        pos_IB, q_IB = self.get_world_pose()  # pylint: disable=invalid-name
 
-        R_IB = quat_to_rot_matrix(q_IB)
-        R_BI = R_IB.transpose()
+        R_IB = quat_to_rot_matrix(q_IB)  # pylint: disable=invalid-name
+        R_BI = R_IB.transpose()  # pylint: disable=invalid-name
         lin_vel_b = np.matmul(R_BI, lin_vel_I)
         ang_vel_b = np.matmul(R_BI, ang_vel_I)
         gravity_b = np.matmul(R_BI, np.array([0.0, 0.0, -1.0]))
@@ -179,7 +184,8 @@ class Anymal(Articulation):
         current_joint_vel = self.get_joint_velocities()
         current_joint_pos = np.array(current_joint_pos.reshape([3, 4]).T.flat)
         current_joint_vel = np.array(current_joint_vel.reshape([3, 4]).T.flat)
-        obs[12:24] = self._joint_pos_scale * (current_joint_pos - self._default_joint_pos)
+        obs[12:24] = self._joint_pos_scale * (current_joint_pos -
+                                              self._default_joint_pos)
         obs[24:36] = self._joint_vel_scale * current_joint_vel
 
         obs[36:48] = self._previous_action
@@ -193,9 +199,9 @@ class Anymal(Articulation):
 
         for i in range(world_scan_points.shape[0]):
             self._query_info.clear()
-            self.physx_query_interface.raycast_all(
-                tuple(world_scan_points[i]), (0.0, 0.0, -1.0), 100, self._hit_report_callback
-            )
+            self.physx_query_interface.raycast_all(tuple(world_scan_points[i]),
+                                                   (0.0, 0.0, -1.0), 100,
+                                                   self._hit_report_callback)
             if self._query_info:
                 distance = min(self._query_info)
                 obs[48 + i] = np.clip(distance - 0.5, -1.0, 1.0)
@@ -203,7 +209,7 @@ class Anymal(Articulation):
                 pass
         return obs
 
-    def advance(self, dt, command):
+    def advance(self, command):
         """[summary]
 
         compute the desired torques and apply them to the articulation
@@ -238,12 +244,13 @@ class Anymal(Articulation):
         current_joint_pos = np.array(current_joint_pos.reshape([3, 4]).T.flat)
         current_joint_vel = np.array(current_joint_vel.reshape([3, 4]).T.flat)
         joint_torques, _ = self._actuator_network.compute_torques(
-            current_joint_pos, current_joint_vel, self._action_scale * self.action
-        )
+            current_joint_pos, current_joint_vel,
+            self._action_scale * self.action)
 
         # finally convert controller order to DC order for command torque
         torque_reorder = np.array(joint_torques.reshape([4, 3]).T.flat)
-        self._dc_interface.set_articulation_dof_efforts(self._handle, torque_reorder)
+        self._dc_interface.set_articulation_dof_efforts(
+            self._handle, torque_reorder)
 
         self._policy_counter += 1
 
@@ -256,6 +263,7 @@ class Anymal(Articulation):
         self.get_articulation_controller().set_effort_modes("force")
         self.get_articulation_controller().switch_control_mode("effort")
 
+    # pylint: disable=useless-super-delegation
     def post_reset(self) -> None:
         """[summary]
 
