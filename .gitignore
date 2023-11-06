@@ -1,6 +1,11 @@
 .vscode
 .thumbs
 
+
+Envs/
+Robots/
+*usd
+
 __pycache__
 
 third_party/qnai_tutorials/isaac_ws

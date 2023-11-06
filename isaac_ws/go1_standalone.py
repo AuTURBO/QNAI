@@ -29,35 +29,29 @@ import omni.appwindow  # Contains handle to keyboard
 import carb
 from utils.unitree import Unitree
 
+
 class Go1Runner(object):
     """[summary]
-        Main class to run the simulation
+    Main class to run the simulation
     """
 
-    def __init__(self, physics_dt, render_dt, way_points=None) -> None:
+    def __init__(self,
+                 physics_dt,
+                 render_dt,
+                 way_points=None,
+                 init_pose=np.array([0, 0, 0.40])) -> None:
         """[summary]
-            creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-            Argument:
-            physics_dt {float} -- Physics downtime of the scene.
-            render_dt {float} -- Render downtime of the scene.
-            way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
+        creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
+        Argument:
+        physics_dt {float} -- Physics downtime of the scene.
+        render_dt {float} -- Render downtime of the scene.
+        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
+        init_pose {List[float]} -- x, y, z
         """
         self._world = World(stage_units_in_meters=1.0,
                             physics_dt=physics_dt,
                             rendering_dt=render_dt)
 
-        # assets_root_path = get_assets_root_path()
-        # if assets_root_path is None:
-        #     carb.log_error("Could not find Isaac Sim assets folder")
-
-        # # spawn scene
-        # prim = get_prim_at_path("/World/Warehouse")
-        # if not prim.IsValid():
-        #     prim = define_prim("/World/Warehouse", "Xform")
-        #     asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-        #     prim.GetReferences().AddReference(asset_path)
-
-        # TODO: change it our environment
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
 
         assets_root_path = current_script_directory
@@ -72,20 +66,24 @@ class Go1Runner(object):
         prim = get_prim_at_path("/World/hospital")
         if not prim.IsValid():
             prim = define_prim("/World/hospital", "Xform")
-            env_asset_path = os.path.join(assets_root_path, "Assets/Envs/hospital.usd")
+            env_asset_path = os.path.join(assets_root_path,
+                                          "Assets/Envs/hospital.usd")
             print(env_asset_path)
             prim.GetReferences().AddReference(env_asset_path)
 
-        robot_usd_path = os.path.join(assets_root_path, "Assets/Robots/go1.usd")
+        robot_usd_path = os.path.join(assets_root_path,
+                                      "Assets/Robots/go1.usd")
         self._robot = self._world.scene.add(
-            Unitree(prim_path="/World/go1",
-                    name="go1",
-                    usd_path=robot_usd_path,
-                    position=np.array([0, 0, 0.40]),
-                    physics_dt=physics_dt,
-                    model="go1",
-                    way_points=way_points,
-                    ros_version="humble"))
+            Unitree(
+                prim_path="/World/go1",
+                name="go1",
+                usd_path=robot_usd_path,
+                position=init_pose,
+                physics_dt=physics_dt,
+                model="go1",
+                way_points=way_points,
+                ros_version="humble",
+            ))
 
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
@@ -115,13 +113,13 @@ class Go1Runner(object):
     @property
     def world(self) -> World:
         """[summary]
-            Returns the world object
+        Returns the world object
         """
         return self._world
 
     def setup(self, way_points=None) -> None:
         """[summary]
-            Set unitree robot's default stance, set up keyboard listener and add physics callback
+        Set unitree robot's default stance, set up keyboard listener and add physics callback
         """
 
         self._robot.set_state(self._robot.default_a1_state)
@@ -140,7 +138,7 @@ class Go1Runner(object):
 
     def on_physics_step(self, step_size) -> None:
         """[summary]
-            Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
+        Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
         """
 
         if self._event_flag:
@@ -151,7 +149,7 @@ class Go1Runner(object):
 
     def run(self) -> None:
         """[summary]
-            Step simulation based on rendering downtime
+        Step simulation based on rendering downtime
         """
         # change to sim running
         while simulation_app.is_running():
@@ -159,7 +157,7 @@ class Go1Runner(object):
 
     def _sub_keyboard_event(self, event) -> bool:
         """[summary]
-            Keyboard subscriber callback to when kit is updated.
+        Keyboard subscriber callback to when kit is updated.
         """
         # reset event
         self._event_flag = False
@@ -194,20 +192,23 @@ class Go1Runner(object):
 
 
 parser = argparse.ArgumentParser(description="a1 quadruped demo")
-parser.add_argument("-w",
-                    "--waypoint",
-                    type=str,
-                    metavar="",
-                    required=False,
-                    help="file path to the waypoints")
+parser.add_argument(
+    "-w",
+    "--waypoint",
+    type=str,
+    metavar="",
+    required=False,
+    help="file path to the waypoints",
+)
 args, unknown = parser.parse_known_args()
 
 
 def main():
     """[summary]
-        Parse arguments and instantiate A1 runner
+    Parse arguments and instantiate A1 runner
     """
     physics_downtime = 1 / 400.0
+
     if args.waypoint:
         waypoint_pose = []
         try:
@@ -225,15 +226,21 @@ def main():
             simulation_app.close()
             return
 
-        runner = Go1Runner(physics_dt=physics_downtime,
-                           render_dt=16 * physics_downtime,
-                           way_points=waypoint_pose)
+        runner = Go1Runner(
+            physics_dt=physics_downtime,
+            render_dt=16 * physics_downtime,
+            way_points=waypoint_pose,
+            init_pose=np.array([-27.0, 10, 0.40]),
+        )
         simulation_app.update()
         runner.setup(way_points=waypoint_pose)
     else:
-        runner = Go1Runner(physics_dt=physics_downtime,
-                           render_dt=16 * physics_downtime,
-                           way_points=None)
+        runner = Go1Runner(
+            physics_dt=physics_downtime,
+            render_dt=16 * physics_downtime,
+            way_points=None,
+            init_pose=np.array([-27.0, 10, 0.40]),
+        )
         simulation_app.update()
         runner.setup(None)
 

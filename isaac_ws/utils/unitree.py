@@ -94,16 +94,19 @@ class Unitree(Articulation):
         self._default_a1_state.base_frame.ang_vel = np.array([0.0, 0.0, 0.0])
         self._default_a1_state.base_frame.lin_vel = np.array([0.0, 0.0, 0.0])
         self._default_a1_state.joint_pos = np.array(
-            [0.0, 1.2, -1.8, 0, 1.2, -1.8, 0.0, 1.2, -1.8, 0, 1.2, -1.8])
+            [0.0, 1.2, -1.8, 0, 1.2, -1.8, 0.0, 1.2, -1.8, 0, 1.2, -1.8]
+        )
         self._default_a1_state.joint_vel = np.zeros(12)
 
         self._goal = np.zeros(3)
         self.meters_per_unit = get_stage_units()
 
-        super().__init__(prim_path=self._prim_path,
-                         name=name,
-                         position=position,
-                         orientation=orientation)
+        super().__init__(
+            prim_path=self._prim_path,
+            name=name,
+            position=position,
+            orientation=orientation,
+        )
 
         # contact sensor setup
         self.feet_order = ["FL", "FR", "RL", "RR"]
@@ -138,8 +141,7 @@ class Unitree(Articulation):
         # Controller
         self.physics_dt = physics_dt
         if way_points:
-            self._qp_controller = A1QPController(model, self.physics_dt,
-                                                 way_points)
+            self._qp_controller = A1QPController(model, self.physics_dt, way_points)
         else:
             self._qp_controller = A1QPController(model, self.physics_dt)
         self._qp_controller.setup()
@@ -175,8 +177,10 @@ class Unitree(Articulation):
         Raises:
             RuntimeError: When the DC Toolbox interface has not been configured.
         """
-        self.set_world_pose(position=state.base_frame.pos,
-                            orientation=state.base_frame.quat[[3, 0, 1, 2]])
+        self.set_world_pose(
+            position=state.base_frame.pos,
+            orientation=state.base_frame.quat[[3, 0, 1, 2]],
+        )
         self.set_linear_velocity(state.base_frame.lin_vel)
         self.set_angular_velocity(state.base_frame.ang_vel)
         # joint_state from the DC interface now has the order of
@@ -190,10 +194,16 @@ class Unitree(Articulation):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for setting state
-        self.set_joint_positions(positions=np.asarray(
-            np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32))
-        self.set_joint_velocities(velocities=np.asarray(
-            np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32))
+        self.set_joint_positions(
+            positions=np.asarray(
+                np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32
+            )
+        )
+        self.set_joint_velocities(
+            velocities=np.asarray(
+                np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32
+            )
+        )
         self.set_joint_efforts(np.zeros_like(state.joint_pos))
 
     def update_contact_sensor_data(self) -> None:
@@ -235,9 +245,11 @@ class Unitree(Articulation):
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert DC order to controller order for joint info
         self._state.joint_pos = np.array(
-            self.joint_state.positions.reshape([3, 4]).T.flat)
+            self.joint_state.positions.reshape([3, 4]).T.flat
+        )
         self._state.joint_vel = np.array(
-            self.joint_state.velocities.reshape([3, 4]).T.flat)
+            self.joint_state.velocities.reshape([3, 4]).T.flat
+        )
 
         # base frame
         base_pose = self.get_world_pose()
@@ -252,11 +264,7 @@ class Unitree(Articulation):
         self._measurement.base_ang_vel = np.asarray(self.ang_vel)
         self._measurement.base_lin_acc = np.asarray(self.base_lin)
 
-    def advance(self,
-                dt,
-                goal,
-                path_follow=False,
-                auto_start=True) -> np.ndarray:
+    def advance(self, dt, goal, path_follow=False, auto_start=True) -> np.ndarray:
         """[summary]
         compute desired torque and set articulation effort to robot joints
         Argument:
@@ -275,7 +283,8 @@ class Unitree(Articulation):
         self._qp_controller.set_target_command(goal)
 
         self._command.desired_joint_torque = self._qp_controller.advance(
-            dt, self._measurement, path_follow, auto_start)
+            dt, self._measurement, path_follow, auto_start
+        )
 
         # joint_state from the DC interface now has the order of
         # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
@@ -289,7 +298,8 @@ class Unitree(Articulation):
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for command torque
         torque_reorder = np.array(
-            self._command.desired_joint_torque.reshape([4, 3]).T.flat)
+            self._command.desired_joint_torque.reshape([4, 3]).T.flat
+        )
         self.set_joint_efforts(np.asarray(torque_reorder, dtype=np.float32))
         return self._command
 
