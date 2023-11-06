@@ -22,6 +22,7 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 
+from utils.sensor import create_imu_sensor
 from utils.anymal import Anymal
 
 import numpy as np
@@ -85,6 +86,15 @@ class AnymalRunner(object):
                    position=np.array([-30, 10, 0.70]),
                    ros_version="humble",
                    ros_domain_id="10"))
+
+        # generate imu sensor
+        imu_sensor_name = "imu_sensor"
+        imu_prim_path = "/World/Anymal/imu_link"
+        prim = get_prim_at_path(os.path.join(imu_prim_path, imu_sensor_name))
+        if not prim.IsValid():
+            create_imu_sensor(name=imu_sensor_name,
+                              parent=imu_prim_path,
+                              sensor_period=-1)
 
         self._world.reset()
         self._enter_toggled = 0
@@ -185,7 +195,7 @@ def main():
 
     """
     physics_dt = 1 / 200.0
-    render_dt = 1 / 60.0
+    render_dt = 1 / 200.0
 
     runner = AnymalRunner(physics_dt=physics_dt, render_dt=render_dt)
     simulation_app.update()
